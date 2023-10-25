@@ -1,12 +1,10 @@
 import graph
 import typing
-import subprocess
 import json
-import os
 from pwn import *
 
-HOST = 'localhost'
-PORT = 32777
+HOST = '0.cloud.chals.io'
+PORT = 26278
 
 def _is_tree(G: graph.Graph, parent: typing.Optional[int], current: int, visited: typing.Set[int])->bool:
     visited.add(current)
