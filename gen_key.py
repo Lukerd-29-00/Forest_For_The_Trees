@@ -1,7 +1,6 @@
 import graph
 import json
 import random
-import math
 
 RAND = random.SystemRandom()
 

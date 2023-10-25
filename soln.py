@@ -3,6 +3,10 @@ import typing
 import subprocess
 import json
 import os
+from pwn import *
+
+HOST = 'localhost'
+PORT = 32777
 
 def _is_tree(G: graph.Graph, parent: typing.Optional[int], current: int, visited: typing.Set[int])->bool:
     visited.add(current)
@@ -188,7 +192,8 @@ if __name__ == "__main__":
     print(d)
     assert G0.check_mapping(G1,d)
 
-    p = subprocess.Popen(["python3", "server.py"],cwd=os.getcwd(),stdout=subprocess.PIPE,stdin=subprocess.PIPE)
+    r = remote(HOST,PORT)
+
     ROUNDS = 16
     generated = []
 
@@ -196,11 +201,9 @@ if __name__ == "__main__":
         sigma = graph.random_isomorphism(G0)
         G2 = G0.map_vertices(sigma) #If we were using this correctly, this would be a random choice of G0 or G1. We're hacking, so we don't need to worry about that.
         generated.append((G2, sigma))
-        p.stdin.write(G2.dumps().encode('utf-8') + b'\n')
+        r.sendline(G2.dumps().encode('utf-8'))
 
-    p.stdin.flush()
-
-    challenges = p.stdout.readline().strip().decode("utf-8")
+    challenges = r.recvline().strip().decode("utf-8")
 
     challenges = int.from_bytes(bytes.fromhex(challenges),'big')
 
@@ -212,12 +215,11 @@ if __name__ == "__main__":
         else:
             tau = sigma
         
-        p.stdin.write(tau.dumps().encode('utf-8') + b'\n')
-        p.stdin.flush()
+        r.sendline(tau.dumps().encode('utf-8'))
         challenges >>= 1
 
-    p.stdout.readline()
+    r.recvline()
 
-    flag = p.stdout.readline().strip()
+    flag = r.recvline().strip()
 
     print(flag)
